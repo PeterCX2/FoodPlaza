@@ -46,7 +46,7 @@ export default function ProductCreate() {
 
     return (
         <div className="m-20 text-black">
-            <Link href="/admin/menu" className="text-2xl font-bold mb-4 flex flex-row items-center gap-2"><ArrowLeft/>Create Product</Link>
+            <Link href="/admin/menus" className="text-2xl font-bold mb-4 flex flex-row items-center gap-2"><ArrowLeft/>Create Product</Link>
             <form action={createProduct} className="space-y-4">
                 <div>
                     <label htmlFor="name" className="block mb-1">Name:</label>

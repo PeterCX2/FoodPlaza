@@ -50,7 +50,7 @@ export async function createProduct(formData: FormData) {
       data: { name, price, description, category_id }
     })
 
-    return redirect('/admin/menu')
+    return redirect('/admin/menus')
   } catch (error) {
     console.error("Failed to create user:", error)
     throw error
@@ -70,7 +70,7 @@ export async function updateProduct(formData: FormData) {
       data: { name, price, description, category_id }
     })
 
-    return redirect('/admin/menu')
+    return redirect('/admin/menus')
   } catch (error) {
     console.error("Failed to edit user:", error)
     throw error
