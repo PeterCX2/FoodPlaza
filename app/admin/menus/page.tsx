@@ -16,6 +16,16 @@ export default function ProductsPage() {
         loadProducts();
     }, []);
 
+    const formatRupiah = (amount: number) => {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(amount);
+    };
+
+
     const handleDelete = async (id: number, productName: string) => {
         if (!confirm(`Yakin hapus subject "${productName}"?`)) return;
 
@@ -70,15 +80,15 @@ export default function ProductsPage() {
     return (
         <div className="m-20 text-black">
             <div className="flex flex-row justify-between pb-5 items-center">
-                <h1 className="text-3xl font-bold mb-4">Products</h1>
+                <h1 className="text-3xl font-bold mb-4">Menus</h1>
                 <Link href="/admin/menus/create" className="flex flex-row items-center gap-2 text-white rounded-lg bg-blue-600 box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-lg leading-5 text-lg px-4 py-2.5 focus:outline-none">
-                    <PackagePlus/>Add Product
+                    <PackagePlus/>Add Menu
                 </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="bg-white p-4 rounded-lg border shadow-sm">
                     <label className="text-sm text-gray-600 mb-2 block">
-                        Cari Sekolah
+                        Cari menu
                     </label>
                     <div className="relative">
                         <Search
@@ -128,7 +138,7 @@ export default function ProductsPage() {
                                     {product.category_id}
                                 </td>
                                 <td className="px-6 py-4">
-                                    {product.price}
+                                    {formatRupiah(product.price)}
                                 </td>
                                 <td className="px-6 py-4">
                                     <button onClick={() => router.push(`/admin/menus/${product.id}/edit`)} className="text-white m-2 p-[6px] bg-blue-400 rounded-xl">
