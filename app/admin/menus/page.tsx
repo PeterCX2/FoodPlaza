@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { getProducts, deleteProduct } from "./_actions/menus"
 import Link from "next/link"
-import { PackagePlus, Edit2, Trash2, RefreshCw } from 'lucide-react';
+import { PackagePlus, Edit2, Trash2, RefreshCw, Search } from 'lucide-react';
 import { useRouter } from "next/navigation";
 
 export default function ProductsPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState<any[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         loadProducts();
@@ -49,6 +50,12 @@ export default function ProductsPage() {
         }
     };
 
+    const filteredProducts = products.filter((product) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category_id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     if (loading) {
         return (
             <div className="p-6">
@@ -68,7 +75,26 @@ export default function ProductsPage() {
                     <PackagePlus/>Add Product
                 </Link>
             </div>
-            <div className="relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="bg-white p-4 rounded-lg border shadow-sm">
+                    <label className="text-sm text-gray-600 mb-2 block">
+                        Cari Sekolah
+                    </label>
+                    <div className="relative">
+                        <Search
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600"
+                        />
+                        <input
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Nama sekolah..."
+                        className="w-full pl-9 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-gray-600"
+                        />
+                    </div>
+                </div>
+            </div>
+            <div className="bg-white rounded-xl relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
                 <table className="w-full text-sm text-left rtl:text-right text-body">
                     <thead className="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
                         <tr>
@@ -90,7 +116,7 @@ export default function ProductsPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {products.map((product) => (
+                        {filteredProducts.map((product) => (
                             <tr key={product.id} className="bg-neutral-primary border-b border-default">
                                 <th scope="row" className="px-6 py-4 font-medium text-heading whitespace-nowrap">
                                     {product.name}
