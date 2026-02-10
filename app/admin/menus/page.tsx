@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { getProducts, deleteProduct } from "./_actions/menus"
 import Link from "next/link"
-import { PackagePlus, Edit2, Trash2 } from 'lucide-react';
+import { PackagePlus, Edit2, Trash2, RefreshCw } from 'lucide-react';
 import { useRouter } from "next/navigation";
 
 export default function ProductsPage() {
     const router = useRouter();
+    const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState<any[]>([]);
 
     useEffect(() => {
@@ -27,6 +28,7 @@ export default function ProductsPage() {
     }
 
     const loadProducts = async () => {
+        setLoading(true);
         try {
             const products = await getProducts();
             const formattedProducts = Array.isArray(products)
@@ -42,14 +44,27 @@ export default function ProductsPage() {
             setProducts(formattedProducts);
         } catch (error) {
             console.error("Error loading products:", error);
+        } finally {
+            setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="p-6">
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-2" />
+                <p className="text-gray-500">Memuat data...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="m-20 text-black">
             <div className="flex flex-row justify-between pb-5 items-center">
                 <h1 className="text-3xl font-bold mb-4">Products</h1>
-                <Link href="/admin/menu/create" className="flex flex-row items-center gap-2 text-white rounded-lg bg-blue-600 box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-lg leading-5 text-lg px-4 py-2.5 focus:outline-none">
+                <Link href="/admin/menus/create" className="flex flex-row items-center gap-2 text-white rounded-lg bg-blue-600 box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-lg leading-5 text-lg px-4 py-2.5 focus:outline-none">
                     <PackagePlus/>Add Product
                 </Link>
             </div>
@@ -90,7 +105,7 @@ export default function ProductsPage() {
                                     {product.price}
                                 </td>
                                 <td className="px-6 py-4">
-                                    <button onClick={() => router.push(`/admin/menu/${product.id}/edit`)} className="text-white m-2 p-[6px] bg-blue-400 rounded-xl">
+                                    <button onClick={() => router.push(`/admin/menus/${product.id}/edit`)} className="text-white m-2 p-[6px] bg-blue-400 rounded-xl">
                                         <Edit2/>
                                     </button>
                                     <button onClick={() => handleDelete(product.id, product.name)} className="text-white m-2 p-[6px] bg-red-500 rounded-xl">

@@ -7,14 +7,14 @@ import { getProducts } from "../../_actions/menus";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { describe } from "node:test";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 
 
 export default function ProductEdit() {
     const params = useParams()
     const id = Number(params.id)
     const [categories, setCategories] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [product, setProduct] = useState<any | null>(null);
 
 
@@ -71,13 +71,26 @@ export default function ProductEdit() {
         }
     };
 
-    if (!product) {
-        return <div className="m-20">Loading...</div>
+    useEffect(() => {
+        if (product && categories.length > 0) {
+            setLoading(false);
+        }
+    }, [product, categories]);
+
+    if (loading) {
+        return (
+            <div className="p-6">
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-2" />
+                <p className="text-gray-500">Memuat data...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
         <div className="m-20 text-black">
-            <Link href="/admin/menu" className="text-2xl font-bold mb-4 flex flex-row items-center gap-2"><ArrowLeft/>Create Product</Link>
+            <Link href="/admin/menus" className="text-2xl font-bold mb-4 flex flex-row items-center gap-2"><ArrowLeft/>Edit Product</Link>
             <form action={updateProduct} className="space-y-4">
                 <div className="hidden">
                     <label htmlFor="id" className="block mb-1">Id:</label>
