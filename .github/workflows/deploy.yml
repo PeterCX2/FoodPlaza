@@ -45,15 +45,15 @@ jobs:
           script: |
             cd /var/www/food-plaza
             
-            # Setup folder standalone
             mkdir -p .next/standalone/.next
-            cp -r .next/static .next/standalone/.next/
-            cp -r public .next/standalone/
+            [ -d ".next/static" ] && cp -r .next/static .next/standalone/.next/
+            [ -d "public" ] && cp -r public .next/standalone/
             
-            # Jalankan migrasi database di server
+            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             npx prisma migrate deploy
 
-            # Restart PM2
+            cd .next/standalone
+
             pm2 delete food-plaza || true
-            PORT=3000 pm2 start .next/standalone/server.js --name "food-plaza"
+            PORT=3000 DATABASE_URL="${{ secrets.DATABASE_URL }}" pm2 start server.js --name "food-plaza"
             pm2 save
