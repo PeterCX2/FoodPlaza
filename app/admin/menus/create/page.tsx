@@ -10,6 +10,20 @@ import { ArrowLeft } from "lucide-react";
 
 export default function ProductCreate() {
     const [categories, setCategories] = useState<any[]>([]);
+    const [value, setValue] = useState<number>(0)
+
+    const formatRupiahInput = (number: number) => {
+        return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+        }).format(number)
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value.replace(/\D/g, "")
+        setValue(Number(raw))
+    }
 
     function SubmitButton() {
         const { pending } = useFormStatus();
@@ -49,6 +63,17 @@ export default function ProductCreate() {
             <Link href="/admin/menus" className="text-2xl font-bold mb-4 flex flex-row items-center gap-2"><ArrowLeft/>Create Product</Link>
             <form action={createProduct} className="space-y-4">
                 <div>
+                    <label htmlFor="image" className="block mb-1">Image:</label>
+                    <input 
+                    type="file"
+                    id="image" 
+                    name="image" 
+                    accept="image/*"
+                    required
+                    className="border p-2 rounded w-full"
+                    />
+                </div>
+                <div>
                     <label htmlFor="name" className="block mb-1">Name:</label>
                     <input 
                     type="text" 
@@ -82,11 +107,13 @@ export default function ProductCreate() {
                 <div>
                     <label htmlFor="price" className="block mb-1">Price:</label>
                     <input 
-                    type="number" 
+                    type="text" 
                     id="price" 
                     name="price" 
+                    value={value ? formatRupiahInput(value) : ""}
+                    onChange={handleChange}
                     required
-                    className="border p-2 rounded w-full"
+                    className="border p-2 rounded w-50 text-right"
                     />
                 </div>
                 <SubmitButton />

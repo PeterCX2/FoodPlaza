@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model products {
+  id          Int         @id @default(autoincrement())
+  image       String
+  name        String
+  description String
+  price       Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  categories  categories? @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  category_id Int?
+}
+
+model categories {
+  id        Int        @id @default(autoincrement())
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  products  products[]
+}
+
+model sales {
+  id            Int             @id @default(autoincrement())
+  tax           Int
+  discount      Int?
+  total_amount  Int
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  detailedSales detailedSales[]
+  status        String          @default("pending")
+}
+
+model detailedSales {
+  id            Int      @id @default(autoincrement())
+  product_id    Int
+  product_name  String
+  product_price Int
+  sales         sales    @relation(fields: [sales_id], references: [id], onDelete: Cascade)
+  sales_id      Int
+  quantity      Int
+  total_price   Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model promos {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  discount    Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

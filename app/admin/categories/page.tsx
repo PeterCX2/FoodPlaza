@@ -5,12 +5,15 @@ import { deleteCategory, getCategories } from "./_actions/categories"
 import Link from "next/link"
 import { PackagePlus, Edit2, Trash2, RefreshCw, Search } from 'lucide-react';
 import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react"
 
 export default function CategoriesPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const { data: session } = useSession()
+    
 
     useEffect(() => {
         loadCategories();
@@ -48,9 +51,7 @@ export default function CategoriesPage() {
     };
 
     const filteredCategories = categories.filter((category) =>
-        category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        category.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        category.category_id.toLowerCase().includes(searchQuery.toLowerCase())
+        category.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     if (loading) {
@@ -65,60 +66,99 @@ export default function CategoriesPage() {
     }
 
     return (
-        <div className="m-20 text-black">
-            <div className="flex flex-row justify-between pb-5 items-center">
-                <h1 className="text-3xl font-bold mb-4">Categories</h1>
-                <Link href="/admin/categories/create" className="flex flex-row items-center gap-2 text-white rounded-lg bg-blue-600 box-border border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-lg leading-5 text-lg px-4 py-2.5 focus:outline-none">
-                    <PackagePlus/>Add Category
-                </Link>
+        <div className="max-w-7xl mx-auto px-6 py-10 text-black">
+
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-bold">Categories</h1>
+
+                <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                >
+                    Logout
+                </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-white p-4 rounded-lg border shadow-sm">
-                    <label className="text-sm text-gray-600 mb-2 block">
-                        Cari category
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+                <div className="bg-white p-5 rounded-xl border shadow-sm">
+                    <label className="text-sm font-medium text-gray-600 mb-2 block">
+                        Cari Category
                     </label>
                     <div className="relative">
                         <Search
-                        size={16}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600"
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                         />
                         <input
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Nama sekolah..."
-                        className="w-full pl-9 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm text-gray-600"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Nama category..."
+                            className="w-full pl-9 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm outline-none"
                         />
                     </div>
                 </div>
+
+                <div className="flex flex-wrap items-end gap-3">
+                    {[
+                        { label: "Sales", path: "/admin/sales" },
+                        { label: "Menus", path: "/admin/menus" },
+                        { label: "Category", path: "/admin/categories" },
+                        { label: "Promo", path: "/admin/promos" },
+                    ].map((item) => (
+                        <button
+                            key={item.path}
+                            onClick={() => router.push(item.path)}
+                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm transition"
+                        >
+                            {item.label}
+                        </button>
+                    ))}
+
+                    <Link
+                        href="/admin/categories/create"
+                        className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm transition flex items-center gap-2"
+                    >
+                        <PackagePlus size={16} />
+                        Add Category
+                    </Link>
+                </div>
+
             </div>
-            <div className="bg-white rounded-xl relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
-                <table className="w-full text-sm text-left rtl:text-right text-body">
-                    <thead className="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
+
+            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+                <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b">
                         <tr>
-                            <th scope="col" className="px-6 py-3 font-medium">
-                                Name
-                            </th>
-                            <th scope="col" className="px-6 py-3 font-medium">
-                                Actions
-                            </th>
+                            <th className="px-6 py-4 text-left font-semibold">Name</th>
+                            <th className="px-6 py-4 text-left font-semibold">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredCategories.map((category) => (
-                            <tr key={category.id} className="bg-neutral-primary border-b border-default">
-                                <th scope="row" className="px-6 py-4 font-medium text-heading whitespace-nowrap">
+                            <tr
+                                key={category.id}
+                                className="border-b hover:bg-gray-50 transition"
+                            >
+                                <td className="px-6 py-4 font-medium">
                                     {category.name}
-                                </th>
+                                </td>
                                 <td className="px-6 py-4">
-                                    <button onClick={() => handleDelete(category.id, category.name)} className="text-white m-2 p-[6px] bg-red-500 rounded-xl">
-                                        <Trash2/>
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleDelete(category.id, category.name)}
+                                            className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+
         </div>
     )
 }

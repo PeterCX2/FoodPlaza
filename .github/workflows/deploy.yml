@@ -1,0 +1,52 @@
+name: Deploy NextJS Food Plaza
+
+on:
+  push:
+    branches: [ main ] # Pastikan branch utama kamu namanya 'main' bukan 'master'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install & Build
+        run: |
+          npm install
+          npm run build
+
+      - name: Copy to Server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Kita ambil hasil standalone hasil build tadi
+          source: ".next/standalone/*,.next/static/*,public/*"
+          target: "/var/www/food-plaza"
+          strip_components: 1
+
+      - name: Start/Restart PM2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/food-plaza
+            # Next.js Standalone butuh folder static dan public dipindah manual ke dalam folder standalone
+            mkdir -p .next/standalone/.next
+            cp -r .next/static .next/standalone/.next/
+            cp -r public .next/standalone/
+            
+            # Jalankan server.js (bukan npm start) karena pakai mode standalone agar hemat RAM
+            pm2 delete food-plaza || true
+            pm2 start .next/standalone/server.js --name "food-plaza" --env PORT=3000
+            pm2 save

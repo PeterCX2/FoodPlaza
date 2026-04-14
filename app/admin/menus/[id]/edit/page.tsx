@@ -16,6 +16,22 @@ export default function ProductEdit() {
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [product, setProduct] = useState<any | null>(null);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+    const [value, setValue] = useState<number>(0)
+
+    const formatRupiahInput = (number: number) => {
+        return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+        }).format(number)
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value.replace(/\D/g, "")
+        setValue(Number(raw))
+        setProduct({ ...product, price: e.target.value })
+    }
 
 
     function SubmitButton() {
@@ -39,7 +55,6 @@ export default function ProductEdit() {
     const loadProduct = async () => {
         try {
             const products = await getProducts(id)
-            console.log(products)
             if (Array.isArray(products) && products.length > 0) {
                 const p = products[0]
                     setProduct({
@@ -48,14 +63,16 @@ export default function ProductEdit() {
                     description: p.description,
                     price: p.price,
                     category_id: p.category_id,
+                    image: p.image,
                 })
             }
         } catch (error) {
             console.error("Error loading product:", error);
         }
-    }
+    };
 
     const loadCategories = async () => {
+        setCategoriesLoading(true);
         try {
             const categories = await getCategories();
             const formattedCategories = Array.isArray(categories)
@@ -68,11 +85,13 @@ export default function ProductEdit() {
             setCategories(formattedCategories);
         } catch (error) {
             console.error("Error loading categories:", error);
+        } finally {
+            setCategoriesLoading(false);
         }
     };
 
     useEffect(() => {
-        if (product && categories.length > 0) {
+        if (product) {
             setLoading(false);
         }
     }, [product, categories]);
@@ -92,6 +111,22 @@ export default function ProductEdit() {
         <div className="m-20 text-black">
             <Link href="/admin/menus" className="text-2xl font-bold mb-4 flex flex-row items-center gap-2"><ArrowLeft/>Edit Product</Link>
             <form action={updateProduct} className="space-y-4">
+                <div>
+                    <label className="block mb-2">Current Image:</label>
+                    <img src={`/images/${product.image}`} alt="product" className="w-32 h-32 object-cover rounded mb-3"/>
+
+                    <label htmlFor="image" className="block mb-1">
+                        Change Image (optional):
+                    </label>
+
+                    <input
+                        type="file"
+                        id="image"
+                        name="image"
+                        accept="image/*"
+                        className="border p-2 rounded w-full"
+                    />
+                </div>
                 <div className="hidden">
                     <label htmlFor="id" className="block mb-1">Id:</label>
                     <input 
@@ -129,24 +164,29 @@ export default function ProductEdit() {
                 </div>
                 <div>
                     <label htmlFor="category_id" className="block mb-1">Category:</label>
-                    <select value={product.category_id} onChange={(e) => setProduct({ ...product, category_id: parseInt(e.target.value) })} name="category_id" required className="border p-2 rounded w-full">
-                    {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                            {category.name}
-                        </option>
-                    ))}
-                    </select>
+                    {categoriesLoading ? (
+                        <div className="text-gray-500">Loading categories...</div>
+                    ) : (
+                        <select value={product.category_id??0} onChange={(e) => setProduct({ ...product, category_id: parseInt(e.target.value) })} name="category_id" className="border p-2 rounded w-full">
+                            <option value={0} hidden disabled>No Category (category might has been deleted)</option>
+                        {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                                {category.name}
+                            </option>
+                        ))}
+                        </select>
+                    )}
                 </div>
                 <div>
                     <label htmlFor="price" className="block mb-1">Price:</label>
                     <input 
-                    type="number" 
+                    type="text" 
                     id="price" 
                     name="price" 
                     required
                     className="border p-2 rounded w-full"
-                    value={product.price}
-                    onChange={(e) => setProduct({ ...product, price: e.target.value })}
+                    value={value ? formatRupiahInput(value) : formatRupiahInput(product.price)}
+                    onChange={handleChange}
                     />
                 </div>
                 <SubmitButton />
