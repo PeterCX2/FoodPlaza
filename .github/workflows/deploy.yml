@@ -72,10 +72,3 @@ jobs:
             pm2 start server.js --name "food-plaza"
             
             pm2 save
-            
-      - name: Debug secrets (HAPUS SETELAH DEBUG)
-        run: |
-          echo "GOOGLE_CLIENT_ID length: ${{ secrets.GOOGLE_CLIENT_ID != '' && 'SET' || 'KOSONG' }}"
-          echo "GOOGLE_CLIENT_SECRET length: ${{ secrets.GOOGLE_CLIENT_SECRET != '' && 'SET' || 'KOSONG' }}"
-          echo "AUTH_SECRET length: ${{ secrets.AUTH_SECRET != '' && 'SET' || 'KOSONG' }}"
-          echo "DATABASE_URL length: ${{ secrets.DATABASE_URL != '' && 'SET' || 'KOSONG' }}"
