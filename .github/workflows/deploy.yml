@@ -2,7 +2,7 @@ name: Deploy NextJS Food Plaza
 
 on:
   push:
-    branches: [ main ] # Pastikan branch utama kamu namanya 'main' bukan 'master'
+    branches: [ main ]
 
 jobs:
   build-and-deploy:
@@ -20,7 +20,12 @@ jobs:
       - name: Install & Build
         run: |
           npm install
+          # Wajib generate prisma client sebelum build
+          npx prisma generate 
           npm run build
+        env:
+          # Prisma butuh ini saat build untuk validasi schema
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Copy to Server via SCP
         uses: appleboy/scp-action@v0.1.7
@@ -28,8 +33,8 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Kita ambil hasil standalone hasil build tadi
-          source: ".next/standalone/*,.next/static/*,public/*"
+          # Tambahkan prisma/* agar bisa migrate di server
+          source: ".next/standalone/*,.next/static/*,public/*,prisma/*"
           target: "/var/www/food-plaza"
           strip_components: 1
 
@@ -41,12 +46,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/food-plaza
-            # Next.js Standalone butuh folder static dan public dipindah manual ke dalam folder standalone
+            
+            # Setup folder standalone
             mkdir -p .next/standalone/.next
             cp -r .next/static .next/standalone/.next/
             cp -r public .next/standalone/
             
-            # Jalankan server.js (bukan npm start) karena pakai mode standalone agar hemat RAM
+            # Jalankan migrasi database di server
+            npx prisma migrate deploy
+
+            # Restart PM2
             pm2 delete food-plaza || true
-            pm2 start .next/standalone/server.js --name "food-plaza" --env PORT=3000
+            PORT=3000 pm2 start .next/standalone/server.js --name "food-plaza"
             pm2 save
