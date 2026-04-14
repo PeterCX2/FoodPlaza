@@ -24,7 +24,6 @@ jobs:
           npx prisma generate 
           npm run build
         env:
-          # Prisma butuh ini saat build untuk validasi schema
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Copy to Server via SCP
@@ -33,10 +32,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Tambahkan prisma/* agar bisa migrate di server
-          source: ".next/standalone/*,.next/static/*,public/*,prisma/*"
+          source: ".next/standalone/*,.next/static/*,public/*,prisma/*,package.json"
           target: "/var/www/food-plaza"
-          strip_components: 1
+          strip_components: 2
 
       - name: Start/Restart PM2 via SSH
         uses: appleboy/ssh-action@v1.0.3
