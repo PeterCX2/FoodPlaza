@@ -47,20 +47,25 @@ jobs:
           script: |
             cd /var/www/food-plaza
             
-            # 1. Rapikan struktur Standalone (WAJIB agar CSS Muncul)
-            # Memindahkan static ke dalam standalone/.next/static
+            # 1. Rapikan struktur Standalone
             mkdir -p .next/standalone/.next/static
             cp -r .next/static/. .next/standalone/.next/static/
-            
-            # Memindahkan public ke dalam standalone/public
             cp -r public/. .next/standalone/public/
             
             # 2. Jalankan Migrasi Prisma
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             npx prisma migrate deploy
 
-            # 3. Jalankan Server dari folder standalone
+            # 3. Jalankan Server dengan Environment DuckDNS
             cd .next/standalone
             pm2 delete food-plaza || true
-            PORT=3000 DATABASE_URL="${{ secrets.DATABASE_URL }}" pm2 start server.js --name "food-plaza"
+            
+            # TAMBAHKAN NEXTAUTH_URL DI SINI
+            PORT=3000 \
+            DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            NEXTAUTH_URL="http://foodplaza.duckdns.org:3000" \
+            AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
+            AUTH_TRUST_HOST=true \
+            pm2 start server.js --name "food-plaza"
+            
             pm2 save
