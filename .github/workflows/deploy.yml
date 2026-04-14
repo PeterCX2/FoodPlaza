@@ -56,14 +56,15 @@ jobs:
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             npx prisma migrate deploy
 
-            # 3. Jalankan Server dengan Environment DuckDNS
+            # 3. Jalankan Server dengan Environment Lengkap
             cd .next/standalone
             pm2 delete food-plaza || true
             
-            # TAMBAHKAN NEXTAUTH_URL DI SINI
             PORT=3000 \
+            HOSTNAME=0.0.0.0 \
             DATABASE_URL="${{ secrets.DATABASE_URL }}" \
             NEXTAUTH_URL="http://foodplaza.duckdns.org:3000" \
+            AUTH_URL="http://foodplaza.duckdns.org:3000" \
             AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
             GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
             GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
