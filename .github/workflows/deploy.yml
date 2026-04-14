@@ -65,6 +65,8 @@ jobs:
             DATABASE_URL="${{ secrets.DATABASE_URL }}" \
             NEXTAUTH_URL="http://foodplaza.duckdns.org:3000" \
             AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
+            GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
+            GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
             AUTH_TRUST_HOST=true \
             pm2 start server.js --name "food-plaza"
             
