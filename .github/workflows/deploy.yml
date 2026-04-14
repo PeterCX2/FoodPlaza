@@ -45,15 +45,18 @@ jobs:
           script: |
             cd /var/www/food-plaza
             
+            # Setup folder biar CSS/Gambar muncul
             mkdir -p .next/standalone/.next
             [ -d ".next/static" ] && cp -r .next/static .next/standalone/.next/
             [ -d "public" ] && cp -r public .next/standalone/
             
+            # Jalankan migrasi
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             npx prisma migrate deploy
 
+            # --- INI KUNCINYA ---
             cd .next/standalone
-
+            
             pm2 delete food-plaza || true
             PORT=3000 DATABASE_URL="${{ secrets.DATABASE_URL }}" pm2 start server.js --name "food-plaza"
             pm2 save
