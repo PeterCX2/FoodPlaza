@@ -32,9 +32,11 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: ".next/standalone/*,.next/static/*,public/*,prisma/*,package.json"
+          # Kita ambil standalone, static, dan public secara utuh
+          source: ".next/standalone,.next/static,public,prisma,package.json"
           target: "/var/www/food-plaza"
-          strip_components: 2
+          # strip_components diatur ke 0 agar struktur folder terjaga
+          strip_components: 0
 
       - name: Start/Restart PM2 via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -45,18 +47,20 @@ jobs:
           script: |
             cd /var/www/food-plaza
             
-            # Setup folder biar CSS/Gambar muncul
-            mkdir -p .next/standalone/.next
-            [ -d ".next/static" ] && cp -r .next/static .next/standalone/.next/
-            [ -d "public" ] && cp -r public .next/standalone/
+            # 1. Rapikan struktur Standalone (WAJIB agar CSS Muncul)
+            # Memindahkan static ke dalam standalone/.next/static
+            mkdir -p .next/standalone/.next/static
+            cp -r .next/static/. .next/standalone/.next/static/
             
-            # Jalankan migrasi
+            # Memindahkan public ke dalam standalone/public
+            cp -r public/. .next/standalone/public/
+            
+            # 2. Jalankan Migrasi Prisma
             export DATABASE_URL="${{ secrets.DATABASE_URL }}"
             npx prisma migrate deploy
 
-            # --- INI KUNCINYA ---
+            # 3. Jalankan Server dari folder standalone
             cd .next/standalone
-            
             pm2 delete food-plaza || true
             PORT=3000 DATABASE_URL="${{ secrets.DATABASE_URL }}" pm2 start server.js --name "food-plaza"
             pm2 save
