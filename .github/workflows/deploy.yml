@@ -37,6 +37,7 @@ jobs:
           target: "/var/www/food-plaza"
           # strip_components diatur ke 0 agar struktur folder terjaga
           strip_components: 0
+          rm: true
 
       - name: Start/Restart PM2 via SSH
         uses: appleboy/ssh-action@v1.0.3
